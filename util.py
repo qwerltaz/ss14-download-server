@@ -1,4 +1,4 @@
-"""Specific folder retrieval functions."""
+"""Specific info retrieval functions."""
 
 import os
 from pathlib import Path
@@ -22,21 +22,21 @@ def get_downloads_dir() -> str:
 
 def get_ss14_version() -> tuple[str, str]:
     """Get latest version number of ss14 from the website."""
-    version_url = "https://central.spacestation14.io/builds/wizards/builds.html"
+    version_url = "https://wizards.cdn.spacestation14.com/fork/wizards"
 
     response = requests.get(version_url, timeout=20)
 
     if response.status_code != 200:
         raise ConnectionError(
             f"Could not connect to the versioning website. Status code: {response.status_code}"
-            )
+        )
 
     soup = BeautifulSoup(response.text, 'html.parser')
     span = soup.find('span', class_='versionNumber')
 
     # Extract the date string
-    date_tag = soup.find('strong')
-    date_string = date_tag.text.strip()
+    date_tag = soup.find('time')
+    date_string = date_tag.text.strip() if date_tag else "unknown date"
 
     if span:
         value = span.text

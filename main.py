@@ -25,10 +25,10 @@ def main() -> None:
 
     version, version_date = util.get_ss14_version()
 
-    url = f"https://cdn.centcomm.spacestation14.com/builds/wizards/builds/{version}/SS14.Server_win-x64.zip"
+    url = f"https://wizards.cdn.spacestation14.com/fork/wizards/version/{version}/file/SS14.Server_win-x64.zip"
 
     print(f"Downloading version {version}\nfrom {version_date}")
-    response = requests.get(url, stream=True, timeout=20)
+    response = requests.get(url, stream=True, timeout=60)
 
     if response.status_code != 200:
         print(f"Error occurred while downloading the server: {response.status_code}")
@@ -58,4 +58,5 @@ def main() -> None:
     print("Downloaded to: " + extract_path)
 
 
-main()
+if __name__ == '__main__':
+    main()
