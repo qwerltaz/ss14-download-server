@@ -4,24 +4,23 @@ import json
 import os
 import shutil
 import zipfile
+import subprocess
 
 import requests
 
+import cvar
 import util
 
 
 def main() -> None:
     """Download new version and update ss14 server folder."""
 
-    with open("config.json", "r", encoding='utf-8') as file:
-        config = json.load(file)
-
-    downloads_dir = config["downloads_override"]
+    downloads_dir = cvar.DOWNLOADS_OVERRIDE
     if os.path.isdir(downloads_dir):
         print(f"Downloads dir: {downloads_dir}")
     else:
         downloads_dir = util.get_downloads_dir()
-        print(f"Config downloads override dir not found, using default: '{downloads_dir}'")
+        print(f"Downloads override dir not found, using default: '{downloads_dir}'")
 
     version, version_date = util.get_ss14_version()
 
@@ -34,28 +33,30 @@ def main() -> None:
         print(f"Error occurred while downloading the server: {response.status_code}")
         return
 
-    save_path = os.path.join(downloads_dir, "SS14.Server_win-x64.zip")
+    zip_path = os.path.join(downloads_dir, "SS14.Server_win-x64.zip")
 
-    # Open the file in binary mode and write the contents from the response
-    with open(save_path, "wb") as server_zip:
+    with open(zip_path, "wb") as server_zip:
         response.raw.decode_content = True
         shutil.copyfileobj(response.raw, server_zip)
 
     print("Unpacking downloaded server...")
 
-    # Extract the contents of the zip file
-    extract_path = save_path.replace(".zip", "")
+    server_path = zip_path.replace(".zip", "")
 
-    if os.path.isdir(extract_path):
-        shutil.rmtree(extract_path)
+    if os.path.isdir(server_path):
+        shutil.rmtree(server_path)
 
-    with zipfile.ZipFile(save_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_path)
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(server_path)
 
-    # Delete the zip file
-    os.remove(save_path)
+    os.remove(zip_path)
 
-    print("Downloaded to: " + extract_path)
+    print("Downloaded to: " + server_path)
+    
+    # Start server and game.
+    server_exe_name = "Robust.Server.exe"
+    subprocess.run(f'start "Robust server" /d "{server_path}" {server_exe_name}', shell=True)
+    subprocess.run('start "" steam://rungameid/1482520', shell=True)
 
 
 if __name__ == '__main__':
